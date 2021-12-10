@@ -72,19 +72,15 @@ const keyWatcher = (e) => {
 	switch (e.code) {
 		case "ArrowUp":
 			GAME_DATA.direction = "up"
-			moveSnake("up");
 			break;
 		case "ArrowRight":
 			GAME_DATA.direction = "right"
-			moveSnake("right");
 			break;
 		case "ArrowDown":
 			GAME_DATA.direction = "down"
-			moveSnake("down")
 			break;
 		case "ArrowLeft":
 			GAME_DATA.direction = "left"
-			moveSnake("left")
 	}
 }
 
@@ -113,10 +109,10 @@ const moveSnake = (direction) => {
 			case "right":
 				newSnakeHead = document.getElementById(`${parseInt(oldSnake.x) + 1}-${oldSnake.y}`)
 		}
-		if (!newSnakeHead) {
-			// HIT THE EDGE!
+		if (!newSnakeHead || newSnakeHead.checked === true) {
+			// HIT THE EDGE or Own snake
 			// STOP THE LOOP!
-			console.log("Hit the edge!");
+			console.log("Hit the edge or own snake!");
 			clearInterval(GAME_DATA.gameLoopInterval);
 			return;
 		}
@@ -139,18 +135,6 @@ const moveSnake = (direction) => {
 	}
 }
 
-
-
 const gameLoop = () => {
 	moveSnake(GAME_DATA.direction)
 }
-
-
-
-// const awaitTimeoutFn = async (functionToExecute, delay) => new Promise(resolve => {
-// 	functionToExecute();
-// 	setTimeout(resolve, delay);
-// })
-
-
-
