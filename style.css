@@ -71,7 +71,30 @@ h6 {
 /*****************/
 
 .checkbox-wrapper {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 2px;
+	display: grid;
+	grid-gap: 2px;
+	width: 100vw;
+	height: 100vh;
+}
+
+.checkbox-wrapper input {
+	display: inline-block;
+	pointer-events: none;
+}
+
+@keyframes pulse {
+	from {
+		transform: scale(1);
+	}
+	to {
+		transform: scale(1.2);
+	}
+}
+
+.snack {
+	accent-color: red;
+	animation-name: pulse;
+	animation-duration: 0.5s;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
 }
