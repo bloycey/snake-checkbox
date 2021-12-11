@@ -18,20 +18,27 @@ const GAME_DATA = {
 window.addEventListener('DOMContentLoaded', (event) => {
 	loadCheckboxes()
 		.then(() => {
-			setStartingCheck();
-			setSnack();
-			const bestScore = localStorage.getItem("bestScore");
-			if (bestScore) {
-				GAME_DATA.bestScore = bestScore;
-				document.querySelector(".best-score").innerHTML = bestScore;
-			}
-			document.addEventListener('keydown', keyWatcher);
-			if (!GAME_DATA.gameLoopInterval) {
-				GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed)
+			if (window.innerWidth >= 1024) {
+				setStartingCheck();
+				setSnack();
+				const bestScore = localStorage.getItem("bestScore");
+				if (bestScore) {
+					GAME_DATA.bestScore = bestScore;
+					document.querySelector(".best-score").innerHTML = bestScore;
+				}
+				document.addEventListener('keydown', keyWatcher);
+				if (!GAME_DATA.gameLoopInterval) {
+					GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed)
+				}
+			} else {
+				document.querySelectorAll("input").forEach(input => {
+					input.addEventListener("change", (e) => {
+						spiral(e.target);
+					})
+				})
 			}
 		})
-});
-
+})
 
 const loadCheckboxes = async () => new Promise((resolve, reject) => {
 	const createCheckbox = (rowIndex, colIndex, isChecked) => {
@@ -251,6 +258,105 @@ const setSnack = () => {
 	randomSnack.checked = true;
 	randomSnack.classList.add("snack");
 	GAME_DATA.snack = randomSnack;
+}
+
+const spiral = (firstNode) => {
+	const delay = 5;
+	const up = (startingNode) => {
+		startingNode.checked = true;
+		const upNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) - 1);
+		const leftNode = getCheckByCoords(parseInt(startingNode.dataset.x) - 1, startingNode.dataset.y);
+
+		if (checkNode(leftNode)) {
+			setTimeout(() => {
+				left(leftNode)
+			}, delay)
+		} else if (checkNode(upNode)) {
+			setTimeout(() => {
+				up(upNode)
+			}, delay)
+		} else {
+			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+			return;
+		}
+	}
+
+	const left = (startingNode) => {
+		startingNode.checked = true;
+		const leftNode = getCheckByCoords(parseInt(startingNode.dataset.x) - 1, startingNode.dataset.y);
+		const downNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) + 1);
+
+		if (checkNode(downNode)) {
+			setTimeout(() => {
+				down(downNode)
+			}, delay)
+		} else if (checkNode(leftNode)) {
+			setTimeout(() => {
+				left(leftNode)
+			}, delay)
+		} else {
+			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+			return;
+		}
+	}
+
+	const down = (startingNode) => {
+		startingNode.checked = true;
+		const downNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) + 1);
+		const rightNode = getCheckByCoords(parseInt(startingNode.dataset.x) + 1, startingNode.dataset.y);
+
+		if (checkNode(rightNode)) {
+			setTimeout(() => {
+				right(rightNode)
+			}, delay)
+		} else if (checkNode(downNode)) {
+			setTimeout(() => {
+				down(downNode)
+			}, delay)
+		} else {
+			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+			return;
+		}
+	}
+
+	const right = (startingNode) => {
+		startingNode.checked = true;
+		const rightNode = getCheckByCoords(parseInt(startingNode.dataset.x) + 1, startingNode.dataset.y);
+		const upNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) - 1);
+
+		if (checkNode(upNode)) {
+			setTimeout(() => {
+				up(upNode)
+			}, delay)
+		} else if (checkNode(rightNode)) {
+			setTimeout(() => {
+				right(rightNode)
+			}, delay)
+		} else {
+			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+			return;
+		}
+	}
+
+	const checkNode = (checkNode) => {
+		if (!checkNode) {
+			return false
+		}
+		if (checkNode.checked) {
+			return false
+		}
+		return true;
+	}
+
+	up(firstNode);
 }
 
 const gameLoop = () => {
