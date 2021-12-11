@@ -56,6 +56,9 @@ const loadCheckboxes = async () => new Promise((resolve, reject) => {
 		checkbox.dataset.y = rowIndex;
 		checkbox.checked = isChecked;
 		checkbox.id = `${colIndex}-${rowIndex}`;
+		if (window.innerWidth <= 1024) {
+			checkbox.style.accentColor = `hsl(${colIndex * 360 / GAME_DATA.checkboxesPerCol}, 100%, 50%)`
+		}
 		return checkbox;
 	}
 
