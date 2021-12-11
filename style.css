@@ -107,14 +107,14 @@ html {
 h1 {
 	font-family: "Canopee", serif;
 	font-weight: 500;
-	font-size: 60px;
+	font-size: 48px;
 	line-height: 85%;
 }
 
 h2 {
 	font-family: "Noto Sans", sans-serif;
 	font-weight: 300;
-	font-size: 24px;
+	font-size: 18px;
 	opacity: 0.7;
 }
 
