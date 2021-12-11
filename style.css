@@ -170,11 +170,13 @@ h2 {
 	grid-gap: 2px;
 	width: 100vw;
 	height: 60vh;
+	height: calc(var(--vh, 1vh) * 60);
 }
 
 .banner {
 	position: relative;
 	height: 40vh;
+	height: calc(var(--vh, 1vh) * 40);
 	background-color: var(--theme-color);
 	color: #ffffff;
 	display: flex;
