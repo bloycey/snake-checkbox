@@ -1,41 +1,18 @@
-const startingData = {
-	gameLoopInterval: null,
-	loopSpeed: 200,
-	gridGap: 2,
-	checkboxWidth: 0,
-	checkboxHeight: 0,
-	checkboxesPerRow: 0,
-	checkboxesPerCol: 0,
-	direction: "up",
-	snake: [], //Array of DOM Nodes,
-	snack: null,
-	score: 0
-}
-
+const STARTING_LOOP_SPEED = 125;
 const GAME_DATA = {
 	gameLoopInterval: null,
-	loopSpeed: 200,
+	loopSpeed: STARTING_LOOP_SPEED,
 	gridGap: 2,
 	checkboxWidth: 0,
 	checkboxHeight: 0,
 	checkboxesPerRow: 0,
 	checkboxesPerCol: 0,
-	direction: "up",
+	direction: null,
 	snake: [], //Array of DOM Nodes,
 	snack: null,
-	score: 0
-}
-
-const init = () => {
-	document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
-		checkbox.checked = false;
-	})
-	setStartingCheck();
-	setSnack();
-	document.addEventListener('keydown', keyWatcher);
-	if (!GAME_DATA.gameLoopInterval) {
-		GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed)
-	}
+	score: 0,
+	onStartScreen: true,
+	bestScore: 0
 }
 
 window.addEventListener('DOMContentLoaded', (event) => {
@@ -43,6 +20,11 @@ window.addEventListener('DOMContentLoaded', (event) => {
 		.then(() => {
 			setStartingCheck();
 			setSnack();
+			const bestScore = localStorage.getItem("bestScore");
+			if (bestScore) {
+				GAME_DATA.bestScore = bestScore;
+				document.querySelector(".best-score").innerHTML = bestScore;
+			}
 			document.addEventListener('keydown', keyWatcher);
 			if (!GAME_DATA.gameLoopInterval) {
 				GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed)
@@ -100,10 +82,14 @@ const setStartingCheck = () => {
 	const startingCheck = getCheckByCoords(startingX, startingY);
 	startingCheck.checked = true;
 
-	// const secondStarting = getCheckByCoords(startingX, parseInt(startingY) + 1);
-	// secondStarting.checked = true;
-
 	GAME_DATA.snake = [startingCheck]
+}
+
+const fadeOutKeys = () => {
+	if (GAME_DATA.onStartScreen) {
+		document.querySelector(".arrow-img").classList.add("no-opacity");
+		GAME_DATA.onStartScreen = false;
+	}
 }
 
 const keyWatcher = (e) => {
@@ -112,24 +98,28 @@ const keyWatcher = (e) => {
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "down") {
 				return;
 			}
+			fadeOutKeys()
 			GAME_DATA.direction = "up"
 			break;
 		case "ArrowRight":
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "left") {
 				return;
 			}
+			fadeOutKeys()
 			GAME_DATA.direction = "right"
 			break;
 		case "ArrowDown":
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "up") {
 				return;
 			}
+			fadeOutKeys()
 			GAME_DATA.direction = "down"
 			break;
 		case "ArrowLeft":
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "right") {
 				return;
 			}
+			fadeOutKeys()
 			GAME_DATA.direction = "left"
 	}
 }
@@ -170,13 +160,22 @@ const moveSnake = (direction) => {
 					checkbox.checked = false;
 				})
 
+				if (GAME_DATA.score > GAME_DATA.bestScore) {
+					GAME_DATA.bestScore = GAME_DATA.score;
+					localStorage.setItem("bestScore", GAME_DATA.score);
+					document.querySelector(".best-score").innerHTML = GAME_DATA.score;
+				}
+
 				GAME_DATA.score = 0;
-				GAME_DATA.loopSpeed = 200;
-				GAME_DATA.direction = "up";
+				document.querySelector(".score").innerHTML = GAME_DATA.score;
+				GAME_DATA.loopSpeed = STARTING_LOOP_SPEED;
+				GAME_DATA.direction = null;
 				GAME_DATA.snake = [];
 
 				setStartingCheck();
 				setSnack();
+				document.querySelector(".arrow-img").classList.remove("no-opacity");
+				GAME_DATA.onStartScreen = true;
 				GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed);
 				return;
 			}
@@ -203,22 +202,46 @@ const moveSnake = (direction) => {
 
 		// Increment score
 		GAME_DATA.score++;
+		document.querySelector(".score").innerHTML = GAME_DATA.score;
 
 		// Set new snack
 		setSnack();
 
 		// Make it a lil faster
-		clearInterval(GAME_DATA.gameLoopInterval);
-		if (GAME_DATA.loopSpeed > 150) {
-			GAME_DATA.loopSpeed -= 5;
-		} else if (GAME_DATA.loopSpeed > 100) {
-			GAME_DATA.loopSpeed -= 2;
-		} else if (GAME_DATA.loopSpeed > 60) {
-			GAME_DATA.loopSpeed--
+		const determineNewLoopSpeed = () => {
+			if (GAME_DATA.snake.length > 10) {
+				return 100;
+			}
+			if (GAME_DATA.snake.length > 15) {
+				return 75;
+			}
+			if (GAME_DATA.snake.length > 25) {
+				return 65;
+			}
+			if (GAME_DATA.snake.length > 30) {
+				return 60;
+			}
+			if (GAME_DATA.snake.length > 40) {
+				return 58;
+			}
+			if (GAME_DATA.snake.length > 50) {
+				return 56;
+			}
+			if (GAME_DATA.snake.length > 60) {
+				return 54;
+			}
+			if (GAME_DATA.snake.length > 70) {
+				return 52;
+			}
+			return GAME_DATA.loopSpeed;
 		}
 
-		GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed);
-
+		const newLoopSpeed = determineNewLoopSpeed();
+		if (newLoopSpeed !== GAME_DATA.loopSpeed) {
+			GAME_DATA.loopSpeed = newLoopSpeed;
+			clearInterval(GAME_DATA.gameLoopInterval);
+			GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed);
+		}
 	}
 }
 

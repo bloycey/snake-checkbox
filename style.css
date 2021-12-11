@@ -70,11 +70,125 @@ h6 {
 
 /*****************/
 
+@font-face {
+	font-family: "Canopee";
+	src: url("./assets/Canopee.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Noto Sans";
+	src: url("./assets/NotoSans-Regular.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Space Mono Bold";
+	src: url("./assets/SpaceMono-Bold.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Space Mono";
+	src: url("./assets/SpaceMono-Regular.woff2") format("woff2");
+}
+
+html,
+body {
+	font-family: "Noto Sans", sans-serif;
+}
+
+html {
+	font-size: 24px;
+}
+
+h1 {
+	font-family: "Canopee", serif;
+	font-weight: 500;
+	font-size: 132px;
+	line-height: 85%;
+}
+
+h2 {
+	font-family: "Noto Sans", sans-serif;
+	font-weight: 300;
+	font-size: 40px;
+	opacity: 0.7;
+}
+
+:root {
+	--theme-color: #2b24e4;
+	--secondary-color: #ffd342;
+}
+
+.game-wrapper {
+	position: relative;
+}
+
+.img-wrapper {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	transform: translate(0, 20%);
+}
+
+.arrow-img {
+	display: inline-block;
+	width: 250px;
+	animation-name: pulse;
+	animation-duration: 0.5s;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
+	transition: opacity 0.4s ease;
+	opacity: 1;
+}
+
+.no-opacity {
+	opacity: 0;
+}
+
 .checkbox-wrapper {
+	position: relative;
 	display: grid;
 	grid-gap: 2px;
 	width: 100vw;
-	height: 100vh;
+	height: 60vh;
+}
+
+.banner {
+	position: relative;
+	height: 40vh;
+	background-color: var(--theme-color);
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	padding: 0 80px;
+}
+
+.score-counter-wrapper {
+	padding: 24px;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+.best-score-wrapper,
+.current-score-wrapper {
+	display: inline-block;
+}
+
+.current-score-wrapper .score {
+	font-size: 44px;
+	line-height: 100%;
+}
+
+.best-score-wrapper {
+	color: var(--secondary-color);
+	font-size: 18px;
+	margin-right: 24px;
+}
+
+.best-score-wrapper .best-score {
+	font-size: 24px;
+	line-height: 100%;
 }
 
 .checkbox-wrapper input {
@@ -97,4 +211,22 @@ h6 {
 	animation-duration: 0.5s;
 	animation-iteration-count: infinite;
 	animation-direction: alternate;
+}
+
+/* UTILTIIES */
+
+.space-mono {
+	font-family: "Space Mono", monospace;
+}
+
+.space-mono-bold {
+	font-family: "Space Mono Bold", monospace;
+}
+
+.uppercase {
+	text-transform: uppercase;
+}
+
+.text-center {
+	text-align: center;
 }
