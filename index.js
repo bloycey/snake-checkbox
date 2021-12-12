@@ -39,7 +39,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 					GAME_DATA.gameLoopInterval = setInterval(gameLoop, GAME_DATA.loopSpeed)
 				}
 			} else {
-				document.querySelectorAll("input").forEach(input => {
+				document.querySelectorAll(".game-wrapper input").forEach(input => {
 					input.addEventListener("change", (e) => {
 						spiral(e.target);
 					})
@@ -113,6 +113,7 @@ const fadeOutKeys = () => {
 const keyWatcher = (e) => {
 	switch (e.code) {
 		case "ArrowUp":
+			e.preventDefault();
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "down") {
 				return;
 			}
@@ -127,6 +128,7 @@ const keyWatcher = (e) => {
 			GAME_DATA.direction = "right"
 			break;
 		case "ArrowDown":
+			e.preventDefault();
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "up") {
 				return;
 			}
@@ -173,7 +175,7 @@ const moveSnake = (direction) => {
 			// If hit the edge OR hit the snake
 			if (!newSnakeHead || (newSnakeHead.checked === true && (!newSnakeHead.classList.contains("snack")))) {
 				clearInterval(GAME_DATA.gameLoopInterval);
-				document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+				document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
 					checkbox.classList.remove("snack");
 					checkbox.checked = false;
 				})
@@ -264,7 +266,7 @@ const moveSnake = (direction) => {
 }
 
 const setSnack = () => {
-	const potentialSnackSpots = document.querySelectorAll("input[type='checkbox']:not(:checked)");
+	const potentialSnackSpots = document.querySelectorAll(".game-wrapper input[type='checkbox']:not(:checked)");
 	const randomSnack = potentialSnackSpots[Math.floor(Math.random() * potentialSnackSpots.length)];
 	randomSnack.checked = true;
 	randomSnack.classList.add("snack");
@@ -287,7 +289,7 @@ const spiral = (firstNode) => {
 				up(upNode)
 			}, delay)
 		} else {
-			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
 				checkbox.checked = false;
 			})
 			return;
@@ -308,7 +310,7 @@ const spiral = (firstNode) => {
 				left(leftNode)
 			}, delay)
 		} else {
-			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
 				checkbox.checked = false;
 			})
 			return;
@@ -329,7 +331,7 @@ const spiral = (firstNode) => {
 				down(downNode)
 			}, delay)
 		} else {
-			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
 				checkbox.checked = false;
 			})
 			return;
@@ -350,7 +352,7 @@ const spiral = (firstNode) => {
 				right(rightNode)
 			}, delay)
 		} else {
-			document.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
 				checkbox.checked = false;
 			})
 			return;
@@ -373,3 +375,95 @@ const spiral = (firstNode) => {
 const gameLoop = () => {
 	moveSnake(GAME_DATA.direction);
 }
+
+
+const isVisible = (elem) => {
+	let coords = elem.getBoundingClientRect();
+	let windowHeight = document.documentElement.clientHeight;
+	// top elem edge is visible?
+	let topVisible = coords.top > 0 && coords.top < windowHeight;
+	// bottom elem edge is visible?
+	let bottomVisible = coords.bottom < windowHeight && coords.bottom > 0;
+	return topVisible || bottomVisible;
+}
+
+// MATTER JS
+
+const { Engine, Render, Bodies, Runner, World, MouseConstraint, Composites } = Matter;
+const matterWrapper = document.querySelector(".decorative-checkboxes");
+// create an engine
+const engine = Engine.create();
+const height = document.querySelector(".about-me").clientHeight;
+const width = document.querySelector(".about-decoration").clientWidth;
+
+// create a renderer
+const renderer = Render.create({
+	element: matterWrapper,
+	engine,
+	options: {
+		background: "#ffffff",
+		wireframes: false,
+		height,
+		width,
+		pixelRatio: window.devicePixelRatio
+	}
+});
+
+const createShape = (x, y) => {
+	return Bodies.circle(x, y, 20 + 20 * Math.random(), {
+		restitution: 0.6,
+		friction: 0.1,
+		render: {
+			fillStyle: "red"
+		}
+	});
+}
+
+const wallOptions = {
+	isStatic: true,
+	render: {
+		visible: false
+	}
+}
+
+const ground = Bodies.rectangle(width / 2, height, width, 1, wallOptions);
+const ceiling = Bodies.rectangle(width / 2, 0, width, 1, wallOptions);
+const leftWall = Bodies.rectangle(0, height / 2, 1, height, wallOptions);
+const rightWall = Bodies.rectangle(width, height / 2, 1, height, wallOptions);
+
+console.log(MouseConstraint);
+
+
+const mouseControl = MouseConstraint.create(engine, {
+	element: matterWrapper,
+	constraint: {
+		stiffness: 0.2,
+		render: {
+			visible: false
+		}
+	}
+})
+
+const initialShapes = Composites.stack(50, 50, 15, 5, 40, 40, (x, y) => {
+	return createShape(x, y)
+})
+let INITIAL_SHAPES_ADDED = false;
+
+World.add(engine.world, [ground, ceiling, leftWall, rightWall, mouseControl]);
+mouseControl.mouse.element.removeEventListener("mousewheel", mouseControl.mouse.mousewheel);
+mouseControl.mouse.element.removeEventListener("DOMMouseScroll", mouseControl.mouse.mousewheel);
+window.addEventListener("scroll", () => {
+	if (!INITIAL_SHAPES_ADDED && isVisible(matterWrapper)) {
+		World.add(engine.world, initialShapes);
+		INITIAL_SHAPES_ADDED = true;
+	}
+})
+
+matterWrapper.addEventListener("click", (event) => {
+	const shape = createShape(event.layerX, event.layerY);
+	World.add(engine.world, shape);
+})
+
+Runner.run(engine);
+Render.run(renderer);
+
