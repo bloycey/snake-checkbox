@@ -112,7 +112,7 @@ const fadeOutKeys = () => {
 
 const keyWatcher = (e) => {
 	switch (e.code) {
-		case "ArrowUp":
+		case "KeyW":
 			e.preventDefault();
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "down") {
 				return;
@@ -120,14 +120,14 @@ const keyWatcher = (e) => {
 			fadeOutKeys()
 			GAME_DATA.direction = "up"
 			break;
-		case "ArrowRight":
+		case "KeyD":
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "left") {
 				return;
 			}
 			fadeOutKeys()
 			GAME_DATA.direction = "right"
 			break;
-		case "ArrowDown":
+		case "KeyS":
 			e.preventDefault();
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "up") {
 				return;
@@ -135,7 +135,7 @@ const keyWatcher = (e) => {
 			fadeOutKeys()
 			GAME_DATA.direction = "down"
 			break;
-		case "ArrowLeft":
+		case "KeyA":
 			if (GAME_DATA.snake.length > 1 && GAME_DATA.direction === "right") {
 				return;
 			}
@@ -242,16 +242,16 @@ const moveSnake = (direction) => {
 				return 60;
 			}
 			if (GAME_DATA.snake.length > 40) {
-				return 58;
-			}
-			if (GAME_DATA.snake.length > 50) {
 				return 56;
 			}
+			if (GAME_DATA.snake.length > 50) {
+				return 52;
+			}
 			if (GAME_DATA.snake.length > 60) {
-				return 54;
+				return 48;
 			}
 			if (GAME_DATA.snake.length > 70) {
-				return 52;
+				return 45;
 			}
 			return GAME_DATA.loopSpeed;
 		}
@@ -389,15 +389,22 @@ const isVisible = (elem) => {
 
 // MATTER JS
 
-const { Engine, Render, Bodies, Runner, World, MouseConstraint, Composites } = Matter;
-const matterWrapper = document.querySelector(".decorative-checkboxes");
-// create an engine
-const engine = Engine.create();
-const height = document.querySelector(".about-me").clientHeight;
-const width = document.querySelector(".about-decoration").clientWidth;
+const { Engine, Render, Bodies, Runner, World, Mouse, MouseConstraint, Composite, Composites, Common } = Matter;
+Matter.use('matter-wrap');
 
+const matterWrapper = document.querySelector(".decorative-checkboxes");
+
+const engine = Engine.create({
+	gravity: {
+		x: 0.15,
+		y: 0.1
+	}
+});
+const height = document.querySelector(".about-text").clientHeight;
+const width = document.querySelector(".about-decoration").clientWidth;
+const world = engine.world;
 // create a renderer
-const renderer = Render.create({
+const render = Render.create({
 	element: matterWrapper,
 	engine,
 	options: {
@@ -409,61 +416,94 @@ const renderer = Render.create({
 	}
 });
 
-const createShape = (x, y) => {
-	return Bodies.circle(x, y, 20 + 20 * Math.random(), {
+Render.run(render);
+
+// create runner
+const runner = Runner.create();
+Runner.run(runner, engine);
+
+// add bodies
+Composite.add(world, [
+	Bodies.rectangle(400, 600, 1200, 1, { isStatic: true, render: { visible: false } })
+]);
+
+const stack = Composites.stack(0, 0, width / 13, 12, 8, 10, (x, y) => {
+	return Bodies.rectangle(x, y, 20, 20, {
 		restitution: 0.6,
+		friction: 0.5,
+		render: {
+			sprite: {
+				texture: "./assets/checkbox-100.png",
+				xScale: 0.2,
+				yScale: 0.2
+			}
+		}
+	})
+});
+
+Composite.add(world, [
+	stack,
+	Bodies.rectangle(width / 3, height / 2, 100, 100, {
+		density: 0.01,
 		friction: 0.1,
 		render: {
-			fillStyle: "red"
+			sprite: {
+				texture: "./assets/checkbox-100.png",
+			}
+		}
+	}),
+	Bodies.rectangle(width, 0, 100, 100, {
+		density: 0.01,
+		friction: 0.1,
+		render: {
+			sprite: {
+				texture: "./assets/checkbox-100.png",
+			}
+		}
+	}),
+	Bodies.rectangle(width / 2, height / 2, 100, 100, {
+		density: 0.01,
+		friction: 0.1,
+		render: {
+			sprite: {
+				texture: "./assets/checkbox-100.png",
+			}
+		}
+	})
+]);
+
+// add mouse control
+const mouse = Mouse.create(render.canvas),
+	mouseConstraint = MouseConstraint.create(engine, {
+		mouse: mouse,
+		constraint: {
+			stiffness: 0.2,
+			render: {
+				visible: false
+			}
 		}
 	});
+
+mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
+mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstraint.mouse.mousewheel);
+
+Composite.add(world, mouseConstraint);
+
+// keep the mouse in sync with rendering
+render.mouse = mouse;
+
+// fit the render viewport to the scene
+Render.lookAt(render, {
+	min: { x: 0, y: 0 },
+	max: { x: 800, y: 600 }
+});
+
+// wrapping using matter-wrap plugin
+let allBodies = Composite.allBodies(world);
+
+for (let i = 0; i < allBodies.length; i += 1) {
+	allBodies[i].plugin.wrap = {
+		min: { x: render.bounds.min.x - 100, y: render.bounds.min.y },
+		max: { x: render.bounds.max.x + 100, y: render.bounds.max.y }
+	};
 }
-
-const wallOptions = {
-	isStatic: true,
-	render: {
-		visible: false
-	}
-}
-
-const ground = Bodies.rectangle(width / 2, height, width, 1, wallOptions);
-const ceiling = Bodies.rectangle(width / 2, 0, width, 1, wallOptions);
-const leftWall = Bodies.rectangle(0, height / 2, 1, height, wallOptions);
-const rightWall = Bodies.rectangle(width, height / 2, 1, height, wallOptions);
-
-console.log(MouseConstraint);
-
-
-const mouseControl = MouseConstraint.create(engine, {
-	element: matterWrapper,
-	constraint: {
-		stiffness: 0.2,
-		render: {
-			visible: false
-		}
-	}
-})
-
-const initialShapes = Composites.stack(50, 50, 15, 5, 40, 40, (x, y) => {
-	return createShape(x, y)
-})
-let INITIAL_SHAPES_ADDED = false;
-
-World.add(engine.world, [ground, ceiling, leftWall, rightWall, mouseControl]);
-mouseControl.mouse.element.removeEventListener("mousewheel", mouseControl.mouse.mousewheel);
-mouseControl.mouse.element.removeEventListener("DOMMouseScroll", mouseControl.mouse.mousewheel);
-window.addEventListener("scroll", () => {
-	if (!INITIAL_SHAPES_ADDED && isVisible(matterWrapper)) {
-		World.add(engine.world, initialShapes);
-		INITIAL_SHAPES_ADDED = true;
-	}
-})
-
-matterWrapper.addEventListener("click", (event) => {
-	const shape = createShape(event.layerX, event.layerY);
-	World.add(engine.world, shape);
-})
-
-Runner.run(engine);
-Render.run(renderer);
-
