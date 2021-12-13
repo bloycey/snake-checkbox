@@ -447,9 +447,7 @@ const gameLoop = () => {
 const isVisible = (elem) => {
 	let coords = elem.getBoundingClientRect();
 	let windowHeight = document.documentElement.clientHeight;
-	// top elem edge is visible?
 	let topVisible = coords.top > 0 && coords.top < windowHeight;
-	// bottom elem edge is visible?
 	let bottomVisible = coords.bottom < windowHeight && coords.bottom > 0;
 	return topVisible || bottomVisible;
 }
@@ -572,12 +570,6 @@ const loadMatter = () => {
 
 	// keep the mouse in sync with rendering
 	render.mouse = mouse;
-
-	// fit the render viewport to the scene
-	// Render.lookAt(render, {
-	// 	min: { x: 0, y: 0 },
-	// 	max: { x: 1000, y: 1000 }
-	// });
 
 	// wrapping using matter-wrap plugin
 	let allBodies = Composite.allBodies(world);
