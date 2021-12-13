@@ -215,7 +215,7 @@ p + p {
 	color: #ffffff;
 	display: flex;
 	align-items: center;
-	padding: 0 40px;
+	padding: 0 24px;
 }
 
 .score-counter-wrapper {
@@ -260,7 +260,7 @@ p + p {
 }
 
 .about-me {
-	padding: 40px;
+	padding: 24px;
 }
 
 .about-decoration {
@@ -364,7 +364,7 @@ marquee ul li:after {
 	display: inline-block;
 	margin-top: 40px;
 	background: var(--secondary-color);
-	color: initial;
+	color: var(--dark-neutral);
 	padding: 16px 32px;
 	text-decoration: none;
 	border-radius: 5px;
