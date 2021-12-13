@@ -27,6 +27,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 	loadCheckboxes()
 		.then(() => {
 			if (window.innerWidth >= 1024) {
+				loadMatter();
 				setStartingCheck();
 				setSnack();
 				const bestScore = localStorage.getItem("bestScore");
@@ -376,7 +377,6 @@ const gameLoop = () => {
 	moveSnake(GAME_DATA.direction);
 }
 
-
 const isVisible = (elem) => {
 	let coords = elem.getBoundingClientRect();
 	let windowHeight = document.documentElement.clientHeight;
@@ -389,121 +389,141 @@ const isVisible = (elem) => {
 
 // MATTER JS
 
-const { Engine, Render, Bodies, Runner, World, Mouse, MouseConstraint, Composite, Composites, Common } = Matter;
-Matter.use('matter-wrap');
+const loadMatter = () => {
+	const { Engine, Render, Bodies, Runner, World, Mouse, MouseConstraint, Composite, Composites, Common } = Matter;
+	Matter.use('matter-wrap');
 
-const matterWrapper = document.querySelector(".decorative-checkboxes");
+	const matterWrapper = document.querySelector(".about-decoration-inner");
 
-const engine = Engine.create({
-	gravity: {
-		x: 0.15,
-		y: 0.1
-	}
-});
-const height = document.querySelector(".about-text").clientHeight;
-const width = document.querySelector(".about-decoration").clientWidth;
-const world = engine.world;
-// create a renderer
-const render = Render.create({
-	element: matterWrapper,
-	engine,
-	options: {
-		background: "#ffffff",
-		wireframes: false,
-		height,
-		width,
-		pixelRatio: window.devicePixelRatio
-	}
-});
-
-Render.run(render);
-
-// create runner
-const runner = Runner.create();
-Runner.run(runner, engine);
-
-// add bodies
-Composite.add(world, [
-	Bodies.rectangle(400, 600, 1200, 1, { isStatic: true, render: { visible: false } })
-]);
-
-const stack = Composites.stack(0, 0, width / 13, 12, 8, 10, (x, y) => {
-	return Bodies.rectangle(x, y, 20, 20, {
-		restitution: 0.6,
-		friction: 0.5,
-		render: {
-			sprite: {
-				texture: "./assets/checkbox-100.png",
-				xScale: 0.2,
-				yScale: 0.2
-			}
+	const engine = Engine.create({
+		gravity: {
+			x: 0.05,
+			y: 0.05,
 		}
-	})
-});
-
-Composite.add(world, [
-	stack,
-	Bodies.rectangle(width / 3, height / 2, 100, 100, {
-		density: 0.01,
-		friction: 0.1,
-		render: {
-			sprite: {
-				texture: "./assets/checkbox-100.png",
-			}
-		}
-	}),
-	Bodies.rectangle(width, 0, 100, 100, {
-		density: 0.01,
-		friction: 0.1,
-		render: {
-			sprite: {
-				texture: "./assets/checkbox-100.png",
-			}
-		}
-	}),
-	Bodies.rectangle(width / 2, height / 2, 100, 100, {
-		density: 0.01,
-		friction: 0.1,
-		render: {
-			sprite: {
-				texture: "./assets/checkbox-100.png",
-			}
-		}
-	})
-]);
-
-// add mouse control
-const mouse = Mouse.create(render.canvas),
-	mouseConstraint = MouseConstraint.create(engine, {
-		mouse: mouse,
-		constraint: {
-			stiffness: 0.2,
-			render: {
-				visible: false
-			}
+	});
+	const height = document.querySelector(".about-text").clientHeight;
+	console.dir(document.querySelector(".about-text"))
+	const width = document.querySelector(".about-decoration").clientWidth;
+	const world = engine.world;
+	// create a renderer
+	const render = Render.create({
+		element: matterWrapper,
+		engine,
+		options: {
+			background: "#ffffff",
+			wireframes: false,
+			height,
+			width,
+			pixelRatio: window.devicePixelRatio
 		}
 	});
 
-mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
-mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstraint.mouse.mousewheel);
+	Render.run(render);
 
-Composite.add(world, mouseConstraint);
+	// create runner
+	const runner = Runner.create();
+	Runner.run(runner, engine);
 
-// keep the mouse in sync with rendering
-render.mouse = mouse;
+	// add bodies
+	Composite.add(world, [
+		Bodies.rectangle(width / 2, height / 2, 100, 100, {
+			isStatic: true, render: {
+				sprite: {
+					texture: "./assets/checkbox-100.png",
+					xScale: 1,
+					yScale: 1
+				}
+			}
+		})
+	]);
 
-// fit the render viewport to the scene
-Render.lookAt(render, {
-	min: { x: 0, y: 0 },
-	max: { x: 800, y: 600 }
-});
+	const stack = Composites.stack(0, 0, width / 13, 12, 8, 0, (x, y) => {
+		return Bodies.rectangle(x, y, 13, 13, {
+			angularVelocity: Math.random() * 100,
+			angularSpeed: Math.random() * 100,
+			angle: Math.random() * 360,
+			restitution: 0.6,
+			friction: 0.5,
+			render: {
+				sprite: {
+					texture: "./assets/checkbox-100.png",
+					xScale: 0.13,
+					yScale: 0.13
+				}
+			}
+		})
+	});
 
-// wrapping using matter-wrap plugin
-let allBodies = Composite.allBodies(world);
+	Composite.add(world, [
+		stack,
+		Bodies.rectangle(width / 3, height / 2, 50, 50, {
+			density: 0.01,
+			friction: 0.1,
+			render: {
+				sprite: {
+					texture: "./assets/checkbox-100.png",
+					xScale: 0.5,
+					yScale: 0.5
+				}
+			}
+		}),
+		Bodies.rectangle(width, 0, 50, 50, {
+			density: 0.01,
+			friction: 0.1,
+			render: {
+				sprite: {
+					texture: "./assets/checkbox-100.png",
+					xScale: 0.5,
+					yScale: 0.5
+				}
+			}
+		}),
+		Bodies.rectangle(width / 2, height / 2, 75, 75, {
+			density: 0.01,
+			friction: 0.1,
+			render: {
+				sprite: {
+					texture: "./assets/checkbox-100.png",
+					xScale: 0.75,
+					yScale: 0.75
+				}
+			}
+		})
+	]);
 
-for (let i = 0; i < allBodies.length; i += 1) {
-	allBodies[i].plugin.wrap = {
-		min: { x: render.bounds.min.x - 100, y: render.bounds.min.y },
-		max: { x: render.bounds.max.x + 100, y: render.bounds.max.y }
-	};
+	// add mouse control
+	const mouse = Mouse.create(render.canvas),
+		mouseConstraint = MouseConstraint.create(engine, {
+			mouse: mouse,
+			constraint: {
+				stiffness: 0.2,
+				render: {
+					visible: false
+				}
+			}
+		});
+
+	mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
+	mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstraint.mouse.mousewheel);
+
+	Composite.add(world, mouseConstraint);
+
+	// keep the mouse in sync with rendering
+	render.mouse = mouse;
+
+	// fit the render viewport to the scene
+	// Render.lookAt(render, {
+	// 	min: { x: 0, y: 0 },
+	// 	max: { x: 1000, y: 1000 }
+	// });
+
+	// wrapping using matter-wrap plugin
+	let allBodies = Composite.allBodies(world);
+
+	for (let i = 0; i < allBodies.length; i += 1) {
+		allBodies[i].plugin.wrap = {
+			min: { x: render.bounds.min.x - 100, y: render.bounds.min.y },
+			max: { x: render.bounds.max.x + 100, y: render.bounds.max.y }
+		};
+	}
 }
