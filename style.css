@@ -360,6 +360,22 @@ marquee ul li:after {
 	margin-right: 24px;
 }
 
+.links {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-top: 24px;
+}
+
+.links img {
+	filter: grayscale(70%);
+	width: 40px;
+}
+
+.links img:hover {
+	filter: grayscale(0%);
+}
+
 .btn-primary {
 	display: inline-block;
 	margin-top: 40px;
