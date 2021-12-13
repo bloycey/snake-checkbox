@@ -23,6 +23,9 @@ window.addEventListener('resize', () => {
 	document.documentElement.style.setProperty('--vh', `${vh}px`);
 });
 
+const chompSound = new Audio("./assets/chomp-mp3.mp3");
+const dieSound = new Audio("./assets/die.mp3");
+
 window.addEventListener('DOMContentLoaded', (event) => {
 	loadCheckboxes()
 		.then(() => {
@@ -175,6 +178,7 @@ const moveSnake = (direction) => {
 			}
 			// If hit the edge OR hit the snake
 			if (!newSnakeHead || (newSnakeHead.checked === true && (!newSnakeHead.classList.contains("snack")))) {
+				dieSound.play();
 				clearInterval(GAME_DATA.gameLoopInterval);
 				document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
 					checkbox.classList.remove("snack");
@@ -216,6 +220,7 @@ const moveSnake = (direction) => {
 	})
 
 	if (snackEaten) {
+		chompSound.play();
 		// Snake grows
 		const snakeGrowth = oldPositions[oldPositions.length - 1];
 		snakeGrowth.checked = true;
@@ -426,13 +431,9 @@ const loadMatter = () => {
 
 	// add bodies
 	Composite.add(world, [
-		Bodies.rectangle(width / 2, height / 2, 100, 100, {
+		Bodies.circle(width / 2, height / 2, 75, {
 			isStatic: true, render: {
-				sprite: {
-					texture: "./assets/checkbox-100.png",
-					xScale: 1,
-					yScale: 1
-				}
+				fillStyle: "#ffc31d"
 			}
 		})
 	]);

@@ -93,12 +93,13 @@ h6 {
 :root {
 	--theme-color: #2b24e4;
 	--secondary-color: #ffc31d;
+	--dark-neutral: #080637;
 }
 
 html,
 body {
 	font-family: "Noto Sans", sans-serif;
-	color: #080637;
+	color: var(--dark-neutral);
 }
 
 html {
