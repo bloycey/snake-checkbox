@@ -1,4 +1,5 @@
 const STARTING_LOOP_SPEED = 125;
+let windowResized = false;
 const GAME_DATA = {
 	gameLoopInterval: null,
 	loopSpeed: STARTING_LOOP_SPEED,
@@ -27,6 +28,23 @@ const chompSound = new Audio("./assets/chomp-mp3.mp3");
 const dieSound = new Audio("./assets/die.mp3");
 
 window.addEventListener('DOMContentLoaded', (event) => {
+	loadAllContent();
+})
+
+const resizedw = () => {
+	windowResized = false;
+}
+let doit;
+
+window.addEventListener('resize', (event) => {
+	windowResized = true;
+	clearTimeout(doit);
+	doit = setTimeout(resizedw, 100);
+	loadAllContent();
+})
+
+const loadAllContent = () => {
+	document.querySelector('.about-decoration-inner').innerHTML = "";
 	loadCheckboxes()
 		.then(() => {
 			if (window.innerWidth >= 1024) {
@@ -50,7 +68,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 				})
 			}
 		})
-})
+}
 
 const loadCheckboxes = async () => new Promise((resolve, reject) => {
 	const createCheckbox = (rowIndex, colIndex, isChecked) => {
@@ -84,7 +102,9 @@ const loadCheckboxes = async () => new Promise((resolve, reject) => {
 	checkboxWrapper.style.gridTemplateRows = `repeat(${GAME_DATA.checkboxesPerCol}, 1fr)`
 
 	document.querySelector(".checkbox-wrapper").innerHTML = "";
-	document.querySelector(".test").remove();
+	document.querySelector('.test').innerHTML = "";
+
+	// document.querySelector(".test").remove();
 	Array(GAME_DATA.checkboxesPerCol).fill().forEach((checkbox, rowIndex) => {
 		Array(GAME_DATA.checkboxesPerRow).fill().forEach((checkbox, colIndex) => {
 			const newCheckbox = createCheckbox(rowIndex, colIndex, false)
@@ -280,39 +300,69 @@ const setSnack = () => {
 }
 
 const spiral = (firstNode) => {
+	let up_left_to;
+	let up_up_to;
+	let left_down_to;
+	let left_left_to;
+	let down_right_to;
+	let down_down_to;
+	let right_up_to;
+	let right_right_to;
 	const delay = 5;
 	const up = (startingNode) => {
+		const clear = () => {
+			clearInterval(up_left_to);
+			clearInterval(up_up_to);
+			clearInterval(left_down_to);
+			clearInterval(left_left_to);
+			clearInterval(down_right_to);
+			clearInterval(down_down_to);
+			clearInterval(right_up_to);
+			clearInterval(right_right_to);
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+		}
+
+		if (windowResized) {
+			clear();
+			return;
+		}
 		startingNode.checked = true;
 		const upNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) - 1);
 		const leftNode = getCheckByCoords(parseInt(startingNode.dataset.x) - 1, startingNode.dataset.y);
 
 		if (checkNode(leftNode)) {
-			setTimeout(() => {
+			up_left_to = setTimeout(() => {
 				left(leftNode)
 			}, delay)
 		} else if (checkNode(upNode)) {
-			setTimeout(() => {
+			up_up_to = setTimeout(() => {
 				up(upNode)
 			}, delay)
 		} else {
-			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
-				checkbox.checked = false;
-			})
+			clear();
 			return;
 		}
 	}
 
 	const left = (startingNode) => {
+		if (windowResized) {
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+			return;
+		}
 		startingNode.checked = true;
 		const leftNode = getCheckByCoords(parseInt(startingNode.dataset.x) - 1, startingNode.dataset.y);
 		const downNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) + 1);
 
 		if (checkNode(downNode)) {
-			setTimeout(() => {
+			left_down_to = setTimeout(() => {
 				down(downNode)
 			}, delay)
 		} else if (checkNode(leftNode)) {
-			setTimeout(() => {
+			left_left_to = setTimeout(() => {
 				left(leftNode)
 			}, delay)
 		} else {
@@ -324,16 +374,22 @@ const spiral = (firstNode) => {
 	}
 
 	const down = (startingNode) => {
+		if (windowResized) {
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+			return;
+		}
 		startingNode.checked = true;
 		const downNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) + 1);
 		const rightNode = getCheckByCoords(parseInt(startingNode.dataset.x) + 1, startingNode.dataset.y);
 
 		if (checkNode(rightNode)) {
-			setTimeout(() => {
+			down_right_to = setTimeout(() => {
 				right(rightNode)
 			}, delay)
 		} else if (checkNode(downNode)) {
-			setTimeout(() => {
+			down_down_to = setTimeout(() => {
 				down(downNode)
 			}, delay)
 		} else {
@@ -345,16 +401,22 @@ const spiral = (firstNode) => {
 	}
 
 	const right = (startingNode) => {
+		if (windowResized) {
+			document.querySelectorAll(".game-wrapper input[type='checkbox']").forEach(checkbox => {
+				checkbox.checked = false;
+			})
+			return;
+		}
 		startingNode.checked = true;
 		const rightNode = getCheckByCoords(parseInt(startingNode.dataset.x) + 1, startingNode.dataset.y);
 		const upNode = getCheckByCoords(startingNode.dataset.x, parseInt(startingNode.dataset.y) - 1);
 
 		if (checkNode(upNode)) {
-			setTimeout(() => {
+			right_up_to = setTimeout(() => {
 				up(upNode)
 			}, delay)
 		} else if (checkNode(rightNode)) {
-			setTimeout(() => {
+			right_right_to = setTimeout(() => {
 				right(rightNode)
 			}, delay)
 		} else {
@@ -407,7 +469,6 @@ const loadMatter = () => {
 		}
 	});
 	const height = document.querySelector(".about-text").clientHeight;
-	console.dir(document.querySelector(".about-text"))
 	const width = document.querySelector(".about-decoration").clientWidth;
 	const world = engine.world;
 	// create a renderer
