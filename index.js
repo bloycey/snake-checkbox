@@ -104,7 +104,6 @@ const loadCheckboxes = async () => new Promise((resolve, reject) => {
 	document.querySelector(".checkbox-wrapper").innerHTML = "";
 	document.querySelector('.test').innerHTML = "";
 
-	// document.querySelector(".test").remove();
 	Array(GAME_DATA.checkboxesPerCol).fill().forEach((checkbox, rowIndex) => {
 		Array(GAME_DATA.checkboxesPerRow).fill().forEach((checkbox, colIndex) => {
 			const newCheckbox = createCheckbox(rowIndex, colIndex, false)
